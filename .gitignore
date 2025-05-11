@@ -1,0 +1,9 @@
+# 기본적으로 모든 파일 무시
+*
+
+# .gitignore 허용
+!/.gitignore
+
+# NuGet 허용
+!/NuGet
+!/NuGet/**
