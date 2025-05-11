@@ -11,6 +11,22 @@ unsafe public struct UnmanagedLinkedListNode<TValue> : IUnmanagedLinkedListNode<
     public static IntPtr valuePtrOffset
         => (IntPtr)(&((UnmanagedLinkedListNode<TValue>*)0)->value);
 
+
+    public static UnmanagedLinkedListNode<TValue>* CreateNode()
+    {
+        UnmanagedLinkedListNode<TValue>* newNodePtr = (UnmanagedLinkedListNode<TValue>*)Marshal.AllocHGlobal(sizeof(UnmanagedLinkedListNode<TValue>));
+
+        return newNodePtr;
+    }
+    public static UnmanagedLinkedListNode<TValue>* CreateNode(TValue value, UnmanagedLinkedListNode<TValue>* nextNodePtr = null)
+    {
+        UnmanagedLinkedListNode<TValue>* newNodePtr = (UnmanagedLinkedListNode<TValue>*)Marshal.AllocHGlobal(sizeof(UnmanagedLinkedListNode<TValue>));
+        newNodePtr->Value = value;
+        newNodePtr->NextNodePtr = nextNodePtr;
+
+        return newNodePtr;
+    }
+
     #endregion
 
 

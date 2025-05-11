@@ -3,6 +3,54 @@ using System.Collections;
 
 namespace HS.CSharp.Common.Collection;
 
+unsafe public interface IDefaultUnmanagedLinkedListNodeEnumerator<TValue, TNode> 
+    : IEnumerator<TNode>, IPointerEnumerator<TNode>
+    where TValue : unmanaged
+    where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
+{
+    #region Static
+
+    public static UnmanagedLinkedListNodeEnumerator<TValue, TNode> Create(TNode* listHeadNodePtr)
+        => new UnmanagedLinkedListNodeEnumerator<TValue, TNode>(listHeadNodePtr);
+
+    #endregion
+
+    #region Instance
+
+    TNode* HeadNodePtr { get; set; }
+
+    TNode* CurrentNodePtr { get; set; }
+    bool IsEnd { get; set; }
+
+
+    void IDisposable.Dispose() => throw new NotImplementedException();
+
+    public bool MoveNext()
+    {
+        if (IsEnd)
+            return false;
+
+        if (CurrentNodePtr == null)
+        {
+            CurrentNodePtr = HeadNodePtr;
+        }
+        else
+        {
+            CurrentNodePtr = CurrentNodePtr->NextNodePtr;
+        }
+
+        return CurrentNodePtr != null;
+    }
+    
+    public void Reset()
+    {
+        CurrentNodePtr = null;
+        IsEnd = false;
+    }
+
+    #endregion
+}
+
 unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue, TNode> : IEnumerator<TNode>, IPointerEnumerator<TNode>
     where TValue : unmanaged
     where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>

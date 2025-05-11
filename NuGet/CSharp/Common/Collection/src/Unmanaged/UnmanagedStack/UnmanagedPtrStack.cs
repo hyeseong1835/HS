@@ -62,7 +62,7 @@ unsafe public struct UnmanagedPtrStack<T> : IDisposable
     }
     public void DisposeAndFree()
     {
-        UnmanagedLinkedListValueEnumerator<nint> listNodeEnumerator = list.GetNodePointerEnumerator();
+        UnmanagedLinkedListNodeEnumerator<nint> listNodeEnumerator = list.GetNodeEnumerator();
         while (listNodeEnumerator.MoveNext())
         {
             var ptr = (T*)listNodeEnumerator.CurrentPtr;
