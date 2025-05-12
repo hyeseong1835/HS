@@ -4,7 +4,7 @@ namespace HS.CSharp.Common.Collection.Unmanaged;
 
 unsafe public interface IUnmanagedLinkedListNodeEnumerator<TValue, TNode>
     : IEnumerator<TNode>, 
-      IPointerEnumerator<TNode>
+      IPtrEnumerator<TNode>
     where TValue : unmanaged
     where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
 {
@@ -16,7 +16,7 @@ unsafe public interface IUnmanagedLinkedListNodeEnumerator<TValue, TNode>
 
     TNode* CurrentNodePtr { get; }
     TNode IEnumerator<TNode>.Current => *CurrentNodePtr;
-    TNode* IPointerEnumerator<TNode>.CurrentPtr => CurrentNodePtr;
+    TNode* IPtrEnumerator<TNode>.CurrentPtr => CurrentNodePtr;
 
     bool IsEnd { get; }
 

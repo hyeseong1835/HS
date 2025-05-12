@@ -2,7 +2,7 @@ using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections;
 
-namespace HS.CSharp.Common.Collection;
+namespace HS.CSharp.Common.Collection.Unmanaged;
 
 public partial class ReadOnlyByteSpanTree<TValue> : IEnumerable<TValue>
 {
@@ -49,7 +49,7 @@ public partial class ReadOnlyByteSpanTree<TValue> : IEnumerable<TValue>
             this.nodeIterator = tree.GetNodeIterator();
         }
         
-        public bool MoveNext()
+        public bool PtrMoveNext()
         {
             Node? currentNode;
             while (nodeIterator.MoveNext(out currentNode))

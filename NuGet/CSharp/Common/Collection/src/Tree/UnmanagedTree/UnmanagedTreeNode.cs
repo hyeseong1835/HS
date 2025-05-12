@@ -1,8 +1,30 @@
+using System.Runtime.InteropServices;
+
 namespace HS.CSharp.Common.Collection.Unmanaged;
 
-unsafe public struct UnmanagedTreeNode<T> : IUnmanagedTreeNode<T, UnmanagedTreeNode<T>>
+unsafe public struct UnmanagedTreeNode<T> : ITreeNode<T, UnmanagedTreeNode<T>, UnmanagedLinkedList<UnmanagedTreeNode<T>>>
     where T : unmanaged
 {
+    #region Static
+
+    public static UnmanagedTreeNode<T>* CreatePtr()
+    {
+        UnmanagedTreeNode<T>* nodePtr = (UnmanagedTreeNode<T>*)Marshal.AllocHGlobal(sizeof(UnmanagedTreeNode<T>));
+        *nodePtr = new UnmanagedTreeNode<T>();
+
+        return nodePtr;
+    }
+    public static UnmanagedTreeNode<T>* CreatePtr(T value)
+    {
+        UnmanagedTreeNode<T>* nodePtr = (UnmanagedTreeNode<T>*)Marshal.AllocHGlobal(sizeof(UnmanagedTreeNode<T>));
+        *nodePtr = new UnmanagedTreeNode<T>(value);
+        
+        return nodePtr;
+    }
+
+    #endregion
+
+
     #region Instance
     
     public T value;

@@ -1,7 +1,6 @@
-using HS.CSharp.Common.Collection.Unmanaged;
 using System.Collections;
 
-namespace HS.CSharp.Common.Collection;
+namespace HS.CSharp.Common.Collection.Unmanaged;
 
 unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue> 
   : IUnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>>
@@ -84,6 +83,10 @@ unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue>
 
         return currentNodePtr != null;
     }
+    bool IEnumerator.MoveNext()
+        => MoveNext();
+    bool IPtrEnumerator<UnmanagedLinkedListNode<TValue>>.PtrMoveNext()
+        => MoveNext();
     
     public void Reset()
     {
@@ -125,7 +128,7 @@ unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue, TNode>
 
 
     #region Constructor
-
+    
     public UnmanagedLinkedListNodeEnumerator(TNode* listHeadNodePtr)
     {
         this.headNodePtr = listHeadNodePtr;
@@ -162,6 +165,10 @@ unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue, TNode>
 
         return currentNodePtr != null;
     }
+    bool IEnumerator.MoveNext()
+        => MoveNext();
+    bool IPtrEnumerator<TNode>.PtrMoveNext()
+        => MoveNext();
     
     public void Reset()
     {

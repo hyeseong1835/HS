@@ -1,38 +1,61 @@
-using System.Collections;
+namespace HS.CSharp.Common.Collection.Unmanaged;
 
-namespace HS.CSharp.Common.Collection;
-
-unsafe public struct UnmanagedPtrLinkedListValueEnumerator<TValue> : IEnumerator<IntPtr>
+public struct UnmanagedPtrLinkedListValueEnumerator<TValue> 
+    : IUnmanagedLinkedListValueEnumerator<nint, UnmanagedPtrLinkedListNode<TValue>>
     where TValue : unmanaged
 {
+    #region Static
+
+    // this => UnmanagedPtrLinkedListValueEnumerator<TValue, UnmanagedPtrLinkedListNode<TValue>>
+    public static implicit operator UnmanagedPtrLinkedListValueEnumerator<TValue, UnmanagedPtrLinkedListNode<TValue>>(UnmanagedPtrLinkedListValueEnumerator<TValue> enumerator)
+        => new UnmanagedPtrLinkedListValueEnumerator<TValue, UnmanagedPtrLinkedListNode<TValue>>(enumerator);
+
+    // UnmanagedPtrLinkedListValueEnumerator<TValue, UnmanagedPtrLinkedListNode<TValue>> => this
+    public static implicit operator UnmanagedPtrLinkedListValueEnumerator<TValue>(UnmanagedPtrLinkedListValueEnumerator<TValue, UnmanagedPtrLinkedListNode<TValue>> enumerator)
+        => new UnmanagedPtrLinkedListValueEnumerator<TValue>(enumerator);
+
+
+    // this => UnmanagedPtrLinkedListNodeEnumerator<TValue>
+    public static implicit operator UnmanagedPtrLinkedListNodeEnumerator<TValue>(UnmanagedPtrLinkedListValueEnumerator<TValue> enumerator)
+        => enumerator.nodeEnumerator;
+
+    // UnmanagedPtrLinkedListNodeEnumerator<TValue> => this
+    public static implicit operator UnmanagedPtrLinkedListValueEnumerator<TValue>(UnmanagedPtrLinkedListNodeEnumerator<TValue> nodeEnumerator)
+        => new UnmanagedPtrLinkedListValueEnumerator<TValue>(nodeEnumerator);
+
+    #endregion
+
+
+    #region Instance
+
     #region Field & Property
 
-    object IEnumerator.Current => throw new NotImplementedException();
+    internal UnmanagedPtrLinkedListNodeEnumerator<TValue> nodeEnumerator;
 
-    UnmanagedLinkedListNode<IntPtr>* headNodePtr;
+    unsafe UnmanagedPtrLinkedListNode<TValue>* IUnmanagedLinkedListValueEnumerator<nint, UnmanagedPtrLinkedListNode<TValue>>.HeadNodePtr { 
+        get => nodeEnumerator.HeadNodePtr;
+        set => nodeEnumerator.HeadNodePtr = value;
+    }
 
-    UnmanagedLinkedListNode<IntPtr>* currentNodePtr;
-    public TValue* Current => (TValue*)currentNodePtr->Value;
-    IntPtr IEnumerator<IntPtr>.Current => currentNodePtr->Value;
+    unsafe public UnmanagedPtrLinkedListNode<TValue>* CurrentNodePtr 
+        => nodeEnumerator.CurrentNodePtr;
 
-    bool isEnd;
+    bool IUnmanagedLinkedListValueEnumerator<nint, UnmanagedPtrLinkedListNode<TValue>>.IsEnd 
+        => nodeEnumerator.IsEnd;
+
 
     #endregion
 
 
     #region Constructor
 
-    public UnmanagedPtrLinkedListValueEnumerator(UnmanagedLinkedListNode<IntPtr>* listHeadNodePtr)
-    {
-        this.headNodePtr = listHeadNodePtr;
-        this.currentNodePtr = null;
-        this.isEnd = (listHeadNodePtr == null);
-    }
+    public UnmanagedPtrLinkedListValueEnumerator(UnmanagedPtrLinkedList<TValue> list)
+        : this(list.GetNodeEnumerator()) { }
     public UnmanagedPtrLinkedListValueEnumerator(UnmanagedPtrLinkedListValueEnumerator<TValue> enumerator)
+        : this(enumerator.nodeEnumerator) { }
+    public UnmanagedPtrLinkedListValueEnumerator(UnmanagedPtrLinkedListNodeEnumerator<TValue> nodeEnumerator)
     {
-        this.headNodePtr = enumerator.headNodePtr;
-        this.currentNodePtr = enumerator.currentNodePtr;
-        this.isEnd = enumerator.isEnd;
+        this.nodeEnumerator = nodeEnumerator;
     }
 
     #endregion
@@ -43,66 +66,70 @@ unsafe public struct UnmanagedPtrLinkedListValueEnumerator<TValue> : IEnumerator
     void IDisposable.Dispose() => throw new NotImplementedException();
 
     public bool MoveNext()
-    {
-        if (isEnd)
-            return false;
-
-        if (currentNodePtr == null)
-        {
-            currentNodePtr = headNodePtr;
-        }
-        else
-        {
-            currentNodePtr = currentNodePtr->NextNodePtr;
-        }
-
-        return currentNodePtr != null;
-    }
+        => nodeEnumerator.MoveNext();
     
     public void Reset()
-    {
-        currentNodePtr = null;
-        isEnd = false;
-    }
+        => nodeEnumerator.Reset();
 
     public UnmanagedPtrLinkedListValueEnumerator<TValue> Copy()
         => new UnmanagedPtrLinkedListValueEnumerator<TValue>(this);
 
     #endregion
+ 
+    #endregion
 }
 
-unsafe public struct UnmanagedPtrLinkedListValueEnumerator<TValue, TNode> : IEnumerator<IntPtr>
+unsafe public struct UnmanagedPtrLinkedListValueEnumerator<TValue, TNode>
+    : IUnmanagedLinkedListValueEnumerator<nint, TNode>
     where TValue : unmanaged
-    where TNode : unmanaged, IUnmanagedLinkedListNode<IntPtr, TNode>
+    where TNode : unmanaged, IUnmanagedLinkedListNode<nint, TNode>
 {
+    #region Static
+
+    // this => UnmanagedPtrLinkedListNodeEnumerator<TValue, TNode>
+    public static implicit operator UnmanagedPtrLinkedListNodeEnumerator<TValue, TNode>(UnmanagedPtrLinkedListValueEnumerator<TValue, TNode> enumerator)
+        => enumerator.nodeEnumerator;
+
+    // UnmanagedPtrLinkedListNodeEnumerator<TValue, TNode> => this
+    public static implicit operator UnmanagedPtrLinkedListValueEnumerator<TValue, TNode>(UnmanagedPtrLinkedListNodeEnumerator<TValue, TNode> nodeEnumerator)
+        => new UnmanagedPtrLinkedListValueEnumerator<TValue, TNode>(nodeEnumerator);
+
+    #endregion
+
+
+    #region Instance
+
     #region Field & Property
 
-    object IEnumerator.Current => throw new NotImplementedException();
+    UnmanagedPtrLinkedListNodeEnumerator<TValue, TNode> nodeEnumerator;
 
-    TNode* headNodePtr;
+    unsafe public TNode* HeadNodePtr { 
+        get => nodeEnumerator.HeadNodePtr;
+        set => nodeEnumerator.HeadNodePtr = value;
+    }
 
-    TNode* currentNodePtr;
-    public TValue* Current => (TValue*)currentNodePtr->Value;
-    IntPtr IEnumerator<IntPtr>.Current => currentNodePtr->Value;
+    unsafe public TNode* CurrentNodePtr 
+        => nodeEnumerator.CurrentNodePtr;
 
-    bool isEnd;
+    public TValue* CurrentValue
+        => nodeEnumerator.CurrentValuePtr;
+
+    public bool IsEnd 
+        => nodeEnumerator.IsEnd;
+
 
     #endregion
 
 
     #region Constructor
 
-    public UnmanagedPtrLinkedListValueEnumerator(TNode* listHeadNodePtr)
-    {
-        this.headNodePtr = listHeadNodePtr;
-        this.currentNodePtr = null;
-        this.isEnd = (listHeadNodePtr == null);
-    }
+    public UnmanagedPtrLinkedListValueEnumerator(UnmanagedPtrLinkedList<TValue, UnmanagedPtrLinkedListValueEnumerator<TValue, TNode>, TNode, UnmanagedPtrLinkedListNodeEnumerator<TValue, TNode>> list)
+        : this(list.GetNodeEnumerator()) { }
     public UnmanagedPtrLinkedListValueEnumerator(UnmanagedPtrLinkedListValueEnumerator<TValue, TNode> enumerator)
+        : this(enumerator.nodeEnumerator) { }
+    public UnmanagedPtrLinkedListValueEnumerator(UnmanagedPtrLinkedListNodeEnumerator<TValue, TNode> nodeEnumerator)
     {
-        this.headNodePtr = enumerator.headNodePtr;
-        this.currentNodePtr = enumerator.currentNodePtr;
-        this.isEnd = enumerator.isEnd;
+        this.nodeEnumerator = nodeEnumerator;
     }
 
     #endregion
@@ -113,30 +140,15 @@ unsafe public struct UnmanagedPtrLinkedListValueEnumerator<TValue, TNode> : IEnu
     void IDisposable.Dispose() => throw new NotImplementedException();
 
     public bool MoveNext()
-    {
-        if (isEnd)
-            return false;
-
-        if (currentNodePtr == null)
-        {
-            currentNodePtr = headNodePtr;
-        }
-        else
-        {
-            currentNodePtr = currentNodePtr->NextNodePtr;
-        }
-
-        return currentNodePtr != null;
-    }
+        => nodeEnumerator.MoveNext();
     
     public void Reset()
-    {
-        currentNodePtr = null;
-        isEnd = false;
-    }
+        => nodeEnumerator.Reset();
 
     public UnmanagedPtrLinkedListValueEnumerator<TValue, TNode> Copy()
         => new UnmanagedPtrLinkedListValueEnumerator<TValue, TNode>(this);
+
+    #endregion
 
     #endregion
 }

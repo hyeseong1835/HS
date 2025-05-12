@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace HS.CSharp.Common.Collection;
+namespace HS.CSharp.Common.Collection.Unmanaged;
 
 [StructLayout(LayoutKind.Sequential)]
 unsafe public struct UnmanagedLinkedListNode<TValue> : IUnmanagedLinkedListNode<TValue, UnmanagedLinkedListNode<TValue>>
@@ -11,14 +11,7 @@ unsafe public struct UnmanagedLinkedListNode<TValue> : IUnmanagedLinkedListNode<
     public static IntPtr valuePtrOffset
         => (IntPtr)(&((UnmanagedLinkedListNode<TValue>*)0)->value);
 
-
-    public static UnmanagedLinkedListNode<TValue>* CreateNode()
-    {
-        UnmanagedLinkedListNode<TValue>* newNodePtr = (UnmanagedLinkedListNode<TValue>*)Marshal.AllocHGlobal(sizeof(UnmanagedLinkedListNode<TValue>));
-
-        return newNodePtr;
-    }
-    public static UnmanagedLinkedListNode<TValue>* CreateNode(TValue value, UnmanagedLinkedListNode<TValue>* nextNodePtr = null)
+    public static UnmanagedLinkedListNode<TValue>* CreateNodePtr(TValue value, UnmanagedLinkedListNode<TValue>* nextNodePtr = null)
     {
         UnmanagedLinkedListNode<TValue>* newNodePtr = (UnmanagedLinkedListNode<TValue>*)Marshal.AllocHGlobal(sizeof(UnmanagedLinkedListNode<TValue>));
         newNodePtr->Value = value;
@@ -47,7 +40,7 @@ unsafe public struct UnmanagedLinkedListNode<TValue> : IUnmanagedLinkedListNode<
     }
 
     // 생성자
-    public UnmanagedLinkedListNode(TValue value, UnmanagedLinkedListNode<TValue>* nextNodePtr)
+    public UnmanagedLinkedListNode(TValue value, UnmanagedLinkedListNode<TValue>* nextNodePtr = null)
     {
         this.value = value;
         this.nextNodePtr = nextNodePtr;

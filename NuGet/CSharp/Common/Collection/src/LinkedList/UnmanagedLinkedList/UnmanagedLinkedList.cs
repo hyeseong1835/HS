@@ -6,7 +6,7 @@ unsafe public interface IDefaultUnmanagedLinkedList
 {
     #region Static
 
-    static TNode* CreateNode<TValue, TNode>()
+    static TNode* AllocNodePtr<TValue, TNode>()
         where TValue : unmanaged
         where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
     {
@@ -14,7 +14,26 @@ unsafe public interface IDefaultUnmanagedLinkedList
 
         return newNodePtr;
     }
-    static TNode* CreateNode<TValue, TNode>(TValue value, TNode* nextNodePtr = null)
+    static TNode* AllocNodePtr<TValue, TNode>(TNode node)
+        where TValue : unmanaged
+        where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
+    {
+        TNode* newNodePtr = (TNode*)Marshal.AllocHGlobal(sizeof(TNode));
+        *newNodePtr = node;
+
+        return newNodePtr;
+    }
+    
+    static TNode* AllocNodePtr<TValue, TNode>(TValue value)
+        where TValue : unmanaged
+        where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
+    {
+        TNode* newNodePtr = (TNode*)Marshal.AllocHGlobal(sizeof(TNode));
+        newNodePtr->Value = value;
+
+        return newNodePtr;
+    }
+    static TNode* AllocNodePtr<TValue, TNode>(TValue value, TNode* nextNodePtr)
         where TValue : unmanaged
         where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
     {
@@ -30,7 +49,7 @@ unsafe public interface IDefaultUnmanagedLinkedList
         where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
     {
         // 노드 생성 (new -> head)
-        TNode* newNodePtr = CreateNode<TValue, TNode>(value, headNodePtr);
+        TNode* newNodePtr = AllocNodePtr<TValue, TNode>(value, headNodePtr);
 
         // 시작 노드 재설정
         headNodePtr = newNodePtr;
@@ -47,7 +66,7 @@ unsafe public interface IDefaultUnmanagedLinkedList
         where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
     {
         // 노드 생성
-        TNode* newNodePtr = CreateNode<TValue, TNode>(value);
+        TNode* newNodePtr = AllocNodePtr<TValue, TNode>(value);
 
         // (tail -> new)
         tailNodePtr->NextNodePtr = newNodePtr;
@@ -70,25 +89,8 @@ unsafe public interface IDefaultUnmanagedLinkedList
             throw new InvalidOperationException("이전 노드 포인터가 null입니다.");
 
         // 노드 생성
-        TNode* newNodePtr = CreateNode<TValue, TNode>();
+        TNode* newNodePtr = AllocNodePtr<TValue, TNode>();
         *newNodePtr = newNode;
-
-        prevNodePtr->NextNodePtr = newNodePtr;
-
-        count++;
-    }
-    protected static void InsertNextTo<TValue, TNode>(TValue* prevValuePtr, TValue value, ref int count)
-        where TValue : unmanaged
-        where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
-    {
-        if (prevValuePtr == null)
-            throw new InvalidOperationException("이전 값 포인터가 null입니다.");
-
-        // 노드 생성
-        TNode* newNodePtr = CreateNode<TValue, TNode>();
-        newNodePtr->Value = value;
-
-        TNode* prevNodePtr = (TNode*)((IntPtr)prevValuePtr - newNodePtr->ValuePtrOffset);
 
         prevNodePtr->NextNodePtr = newNodePtr;
 
@@ -186,14 +188,12 @@ unsafe public interface IDefaultUnmanagedLinkedList<TValue, TValueEnumerator, TN
           TValueEnumerator, 
           TNode
       >,
-      IPointerEnumerable<TNode>
+      IPtrEnumerable<TNode>
     where TValue : unmanaged
-    where TValueEnumerator : unmanaged, IUnmanagedLinkedListValueEnumerator<TValue, TNode>
+    where TValueEnumerator : IUnmanagedLinkedListValueEnumerator<TValue, TNode>
     where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
-    where TNodeEnumerator : unmanaged, IUnmanagedLinkedListNodeEnumerator<TValue, TNode>
+    where TNodeEnumerator : IUnmanagedLinkedListNodeEnumerator<TValue, TNode>
 {
-    #region Instance
-
     #region Method
 
     public void AddFirst(TValue value);
@@ -210,8 +210,6 @@ unsafe public interface IDefaultUnmanagedLinkedList<TValue, TValueEnumerator, TN
 
     public TValueEnumerator GetValueEnumerator();
     public TNodeEnumerator GetNodeEnumerator();
-
-    #endregion
 
     #endregion
 }
@@ -233,6 +231,21 @@ unsafe public struct UnmanagedLinkedList<TValue>
       >
     where TValue : unmanaged
 {
+    #region Static
+
+    public static UnmanagedLinkedListNode<TValue>* GetNodePtrByValuePtr(TValue* valuePtr)
+    {
+        if (valuePtr == null)
+            throw new ArgumentNullException(nameof(valuePtr));
+
+        return ((UnmanagedLinkedListNode<TValue>*)(nint)valuePtr - UnmanagedLinkedListNode<TValue>.valuePtrOffset);
+    }
+
+    #endregion
+
+
+    #region Instance
+
     #region Field & Property
 
     UnmanagedLinkedListNode<TValue>* headNodePtr;
@@ -245,6 +258,8 @@ unsafe public struct UnmanagedLinkedList<TValue>
 
     int count;
     public int Count => count;
+
+    public bool IsEmpty => (count == 0);
 
     #endregion
 
@@ -271,7 +286,11 @@ unsafe public struct UnmanagedLinkedList<TValue>
         => IDefaultUnmanagedLinkedList.InsertNextTo<TValue, UnmanagedLinkedListNode<TValue>>(prevNodePtr, newNode, ref count);
 
     public void InsertNextTo(TValue* prevValuePtr, TValue value)
-        => IDefaultUnmanagedLinkedList.InsertNextTo<TValue, UnmanagedLinkedListNode<TValue>>(prevValuePtr, value, ref count);
+        => IDefaultUnmanagedLinkedList.InsertNextTo<TValue, UnmanagedLinkedListNode<TValue>>(
+            GetNodePtrByValuePtr(prevValuePtr), 
+            new UnmanagedLinkedListNode<TValue>(value), 
+            ref count
+        );
     
     public void RemoveFirst()
         => IDefaultUnmanagedLinkedList.RemoveFirst<TValue, UnmanagedLinkedListNode<TValue>>(ref headNodePtr, ref count);
@@ -288,11 +307,13 @@ unsafe public struct UnmanagedLinkedList<TValue>
     public UnmanagedLinkedListValueEnumerator<TValue, UnmanagedLinkedListNode<TValue>> GetValueEnumerator()
         => new UnmanagedLinkedListValueEnumerator<TValue, UnmanagedLinkedListNode<TValue>>(HeadNodePtr);
     
-    IPointerEnumerator<UnmanagedLinkedListNode<TValue>> IPointerEnumerable<UnmanagedLinkedListNode<TValue>>.GetPointerEnumerator()
+    IPtrEnumerator<UnmanagedLinkedListNode<TValue>> IPtrEnumerable<UnmanagedLinkedListNode<TValue>>.GetPointerEnumerator()
         => new UnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>>(HeadNodePtr);
     public UnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>> GetNodeEnumerator()
         => new UnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>>(HeadNodePtr);
     
+    #endregion
+
     #endregion
 }
 
@@ -307,10 +328,30 @@ unsafe public struct UnmanagedLinkedList<TValue>
 unsafe public struct UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator>
     : IDefaultUnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator>
     where TValue : unmanaged
-    where TValueEnumerator : unmanaged, IUnmanagedLinkedListValueEnumerator<TValue, TNode>
+    where TValueEnumerator : IUnmanagedLinkedListValueEnumerator<TValue, TNode>, new()
     where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
-    where TNodeEnumerator : unmanaged, IUnmanagedLinkedListNodeEnumerator<TValue, TNode>
+    where TNodeEnumerator : IUnmanagedLinkedListNodeEnumerator<TValue, TNode>, new()
 {
+    #region Static
+
+    public static nint valuePtrOffset = new TNode().ValuePtrOffset;
+
+    public static TNode CreateNode(TValue value)
+        => IUnmanagedLinkedListNode<TValue, TNode>.CreateNode(value);
+
+    public static TNode* GetNodePtrByValuePtr(TValue* valuePtr)
+    {
+        if (valuePtr == null)
+            throw new ArgumentNullException(nameof(valuePtr));
+
+        return ((TNode*)(nint)valuePtr - valuePtrOffset);
+    }
+
+    #endregion
+
+
+    #region Instance
+
     #region Field & Property
 
     TNode* headNodePtr;
@@ -323,6 +364,8 @@ unsafe public struct UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeE
 
     int count;
     public int Count => count;
+
+    public bool IsEmpty => (count == 0);
 
     #endregion
 
@@ -349,7 +392,11 @@ unsafe public struct UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeE
         => IDefaultUnmanagedLinkedList.InsertNextTo<TValue, TNode>(prevNodePtr, newNode, ref count);
 
     public void InsertNextTo(TValue* prevValuePtr, TValue value)
-        => IDefaultUnmanagedLinkedList.InsertNextTo<TValue, TNode>(prevValuePtr, value, ref count);
+        => IDefaultUnmanagedLinkedList.InsertNextTo<TValue, TNode>(
+            GetNodePtrByValuePtr(prevValuePtr), 
+            CreateNode(value), 
+            ref count
+        );
     
     public void RemoveFirst()
         => IDefaultUnmanagedLinkedList.RemoveFirst<TValue, TNode>(ref headNodePtr, ref count);
@@ -376,7 +423,7 @@ unsafe public struct UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeE
         return enumerator;
     }
     
-    IPointerEnumerator<TNode> IPointerEnumerable<TNode>.GetPointerEnumerator()
+    IPtrEnumerator<TNode> IPtrEnumerable<TNode>.GetPointerEnumerator()
         => new UnmanagedLinkedListNodeEnumerator<TValue, TNode>(HeadNodePtr);
     public TNodeEnumerator GetNodeEnumerator()
     {
@@ -386,5 +433,7 @@ unsafe public struct UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeE
         return enumerator;
     }
         
+    #endregion
+
     #endregion
 }

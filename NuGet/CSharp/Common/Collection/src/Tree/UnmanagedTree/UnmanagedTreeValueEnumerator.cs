@@ -2,29 +2,25 @@ using System.Collections;
 
 namespace HS.CSharp.Common.Collection.Unmanaged;
 
-public struct UnmanagedTreeValueEnumerator<TValue> : IEnumerator<TValue>
-    where TValue : unmanaged
+public struct UnmanagedTreeValueEnumerator<T> : IEnumerator<T>
+    where T : unmanaged
 {
-    UnmanagedTreeNodeEnumerator<TValue> nodeEnumerator;
+    UnmanagedTreeNodeEnumerator<T> nodeEnumerator;
 
-    public TValue Current => nodeEnumerator.Current.value;
+    public T Current => nodeEnumerator.Current.value;
     object IEnumerator.Current => nodeEnumerator.Current.value;
 
 
     #region Constructor
 
-    public UnmanagedTreeValueEnumerator(IUnmanagedTree<TValue, UnmanagedTreeNode<TValue>> tree) 
+    unsafe public UnmanagedTreeValueEnumerator(UnmanagedTree<T>* treePtr) 
     {
-        this.nodeEnumerator = new UnmanagedTreeNodeEnumerator<TValue>(tree);
+        this.nodeEnumerator = new UnmanagedTreeNodeEnumerator<T>(treePtr);
     }
 
-    public UnmanagedTreeValueEnumerator(UnmanagedTreeNode<TValue> rootNode)
+    unsafe public UnmanagedTreeValueEnumerator(UnmanagedTreeNode<T>* rootNodePtr)
     {
-        this.nodeEnumerator = new UnmanagedTreeNodeEnumerator<TValue>(rootNode);
-    }
-    public UnmanagedTreeValueEnumerator(UnmanagedLinkedList<UnmanagedTreeNode<TValue>> childNodeList)
-    {
-        this.nodeEnumerator = new UnmanagedTreeNodeEnumerator<TValue>(childNodeList);
+        this.nodeEnumerator = new UnmanagedTreeNodeEnumerator<T>(rootNodePtr);
     }
 
     #endregion
@@ -34,7 +30,7 @@ public struct UnmanagedTreeValueEnumerator<TValue> : IEnumerator<TValue>
 
     void IEnumerator.Reset() => throw new NotImplementedException();
 
-    public bool MoveNext() => nodeEnumerator.MoveNext();
+    public bool PtrMoveNext() => nodeEnumerator.PtrMoveNext();
     
     public void Dispose() => nodeEnumerator.Dispose();
 

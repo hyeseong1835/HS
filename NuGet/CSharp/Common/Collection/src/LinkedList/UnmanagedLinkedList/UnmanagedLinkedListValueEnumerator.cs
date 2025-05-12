@@ -62,7 +62,7 @@ unsafe public struct UnmanagedLinkedListValueEnumerator<TValue>
 
     void IDisposable.Dispose() => throw new NotImplementedException();
 
-    public bool MoveNext()
+    public bool PtrMoveNext()
     {
         if (isEnd)
             return false;
@@ -139,7 +139,7 @@ unsafe public struct UnmanagedLinkedListValueEnumerator<TValue, TNode>
 
     void IDisposable.Dispose() => throw new NotImplementedException();
 
-    public bool MoveNext()
+    public bool PtrMoveNext()
     {
         if (isEnd)
             return false;

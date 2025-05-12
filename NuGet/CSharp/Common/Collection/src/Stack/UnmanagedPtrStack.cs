@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace HS.CSharp.Common.Collection.Unmanaged;
 
 /// <summary>
@@ -11,7 +13,7 @@ unsafe public struct UnmanagedPtrStack<T> : IDisposable
 {
     #region Static
 
-    public static explicit operator UnmanagedPtrStack<T>(UnmanagedLinkedList<nint> list)
+    public static explicit operator UnmanagedPtrStack<T>(UnmanagedPtrLinkedList<T> list)
         => new UnmanagedPtrStack<T>(list);
 
     #endregion
@@ -19,33 +21,31 @@ unsafe public struct UnmanagedPtrStack<T> : IDisposable
 
     #region Instance
 
-    UnmanagedLinkedList<nint> list;
+    UnmanagedPtrLinkedList<T> list;
     public int Count => list.Count;
     public bool IsEmpty => list.IsEmpty;
 
     public UnmanagedPtrStack()
-    {
-        list = new UnmanagedLinkedList<nint>();
-    }
-    public UnmanagedPtrStack(UnmanagedLinkedList<nint> list)
+        : this(new UnmanagedPtrLinkedList<T>()) { }
+    public UnmanagedPtrStack(UnmanagedPtrLinkedList<T> list)
     {
         this.list = list;
     }
 
     public void Push(T* ptr)
     {
-        list.AddFirst((nint)ptr);
+        list.AddFirst(ptr);
     }
     public T* PushAndGet(T* ptr)
     {
-        list.AddFirst((nint)ptr);
+        list.AddFirst(ptr);
 
         return ptr;
     }
 
     public T* Pop()
     {
-        T* ptr = (T*)list.HeadValue;
+        T* ptr = list.HeadValue;
 
         list.RemoveFirst();
 
@@ -53,22 +53,41 @@ unsafe public struct UnmanagedPtrStack<T> : IDisposable
     }
 
     public T* Peek()
-        => (T*)list.HeadValue;
+        => list.HeadValue;
 
     public void Link<TList>(TList list)
-        where TList : IUnmanagedLinkedList<nint, UnmanagedLinkedListNode<nint>>
+        where TList : IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<T>>
     {
         this.list.Link(list);
     }
+    public void LinkPtrEnumerator<TPtrEnumerator>(TPtrEnumerator ptrEnumerator)
+        where TPtrEnumerator : IPtrEnumerator<T>
+    {
+        UnmanagedPtrLinkedList<T> list = new UnmanagedPtrLinkedList<T>();
+
+        while (ptrEnumerator.PtrMoveNext())
+        {
+            list.AddLast(ptrEnumerator.CurrentPtr);
+        }
+    }
+    public void LinkEnumerator<TEnumerator>(TEnumerator ptrEnumerator)
+        where TEnumerator : IEnumerator<nint>
+    {
+        UnmanagedPtrLinkedList<T> list = new UnmanagedPtrLinkedList<T>();
+
+        while (ptrEnumerator.MoveNext())
+        {
+            list.AddLast((T*)ptrEnumerator.Current);
+        }
+    }
     public void DisposeAndFree()
     {
-        UnmanagedLinkedListNodeEnumerator<nint> listNodeEnumerator = list.GetNodeEnumerator();
-        while (listNodeEnumerator.MoveNext())
+        while (list.Count > 0)
         {
-            var ptr = (T*)listNodeEnumerator.CurrentPtr;
+            T* ptr = Pop();
             Marshal.FreeHGlobal((IntPtr)ptr);
         }
-
+        
         list.Dispose();
     }
     public void Dispose()

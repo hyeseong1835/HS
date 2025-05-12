@@ -7,7 +7,7 @@ namespace HS.CSharp.Common.Collection.Unmanaged;
 /// </summary>
 /// <typeparam name="TValue"></typeparam>
 /// <typeparam name="TNode"></typeparam>
-unsafe public interface IUnmanagedLinkedList<TValue, TNode> : IReadOnlyUnmanagedLinkedList<TValue, TNode>, IPointerEnumerable<TNode>
+unsafe public interface IUnmanagedLinkedList<TValue, TNode> : IReadOnlyUnmanagedLinkedList<TValue, TNode>, IPtrEnumerable<TNode>
     where TValue : unmanaged
     where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
 {

@@ -2,26 +2,24 @@ using System.Runtime.InteropServices;
 
 namespace HS.CSharp.Common.Collection.Unmanaged;
 
-unsafe public struct UnmanagedTree<T> : IUnmanagedTree<T, UnmanagedTreeNode<T>>, IDisposable
+unsafe public struct UnmanagedTree<T> : ITree<T, UnmanagedTreeNode<T>, UnmanagedLinkedList<UnmanagedTreeNode<T>>>, IDisposable
     where T : unmanaged
 {
-    public UnmanagedTreeNode<T> rootNode;
-    public UnmanagedTreeNode<T> RootNode => rootNode;
+    public UnmanagedTreeNode<T>* rootNodePtr;
+    public UnmanagedTreeNode<T> RootNode => *rootNodePtr;
 
     public UnmanagedTree()
     {
-        this.rootNode = new UnmanagedTreeNode<T>(default(T));
+        this.rootNodePtr = UnmanagedTreeNode<T>.CreatePtr();
     }
 
-    public UnmanagedTreeNodePtrEnumerator<T> GetNodePtrEnumerator()
-        => new UnmanagedTreeNodePtrEnumerator<T>(rootNode);
     public UnmanagedTreeNodeEnumerator<T> GetNodeEnumerator()
-        => new UnmanagedTreeNodeEnumerator<T>(rootNode);
+        => new UnmanagedTreeNodeEnumerator<T>(rootNodePtr);
 
     IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        => new UnmanagedTreeValueEnumerator<T>(rootNode);
+        => new UnmanagedTreeValueEnumerator<T>(rootNodePtr);
     public UnmanagedTreeValueEnumerator<T> GetValueEnumerator()
-        => new UnmanagedTreeValueEnumerator<T>(rootNode);
+        => new UnmanagedTreeValueEnumerator<T>(rootNodePtr);
     
     public void Dispose()
     {
@@ -29,7 +27,7 @@ unsafe public struct UnmanagedTree<T> : IUnmanagedTree<T, UnmanagedTreeNode<T>>,
         UnmanagedTreeNodeEnumerator<T> enumerator = GetNodeEnumerator();
 
         // 현재 노드 포인터
-        if (enumerator.MoveNext() == false) 
+        if (enumerator.PtrMoveNext() == false) 
         {
             rootNode = new UnmanagedTreeNode<T>();
             return;
@@ -38,7 +36,7 @@ unsafe public struct UnmanagedTree<T> : IUnmanagedTree<T, UnmanagedTreeNode<T>>,
 
         // 다음 노드가 없을 때까지 열거
         UnmanagedTreeNode<T>* tempNodePtr;
-        while (enumerator.MoveNext())
+        while (enumerator.PtrMoveNext())
         {
             // 현재 노드 포인터 임시 저장
             tempNodePtr = nodePtr;
