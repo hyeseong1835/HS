@@ -1,20 +1,41 @@
 using System.Collections;
 
-namespace HS.CSharp.Common.Collection;
+namespace HS.CSharp.Common.Collection.Unmanaged;
 
-unsafe public struct UnmanagedLinkedListValueEnumerator<TValue> : IEnumerator<TValue>
+unsafe public struct UnmanagedLinkedListValueEnumerator<TValue>
+    : IUnmanagedLinkedListValueEnumerator<TValue, UnmanagedLinkedListNode<TValue>>
     where TValue : unmanaged
 {
+    #region Static
+
+    public static implicit operator UnmanagedLinkedListValueEnumerator<TValue>(UnmanagedLinkedListValueEnumerator<TValue, UnmanagedLinkedListNode<TValue>> enumerator)
+        => new UnmanagedLinkedListValueEnumerator<TValue>(enumerator);
+
+    public static implicit operator UnmanagedLinkedListValueEnumerator<TValue, UnmanagedLinkedListNode<TValue>>(UnmanagedLinkedListValueEnumerator<TValue> enumerator)
+        => new UnmanagedLinkedListValueEnumerator<TValue, UnmanagedLinkedListNode<TValue>>(enumerator);
+
+    #endregion
+
+
+    #region Instance
+
     #region Field & Property
 
     object IEnumerator.Current => throw new NotImplementedException();
 
     UnmanagedLinkedListNode<TValue>* headNodePtr;
+    public UnmanagedLinkedListNode<TValue>* HeadNodePtr {
+        get => headNodePtr;
+        set => headNodePtr = value;
+    }
 
     UnmanagedLinkedListNode<TValue>* currentNodePtr;
+    public UnmanagedLinkedListNode<TValue>* CurrentNodePtr => currentNodePtr;
+
     public TValue Current => currentNodePtr->Value;
 
     bool isEnd;
+    public bool IsEnd => isEnd;
 
     #endregion
 
@@ -68,9 +89,12 @@ unsafe public struct UnmanagedLinkedListValueEnumerator<TValue> : IEnumerator<TV
         => new UnmanagedLinkedListValueEnumerator<TValue>(this);
 
     #endregion
+
+    #endregion
 }
 
-unsafe public struct UnmanagedLinkedListValueEnumerator<TValue, TNode> : IEnumerator<TValue>
+unsafe public struct UnmanagedLinkedListValueEnumerator<TValue, TNode>
+    : IUnmanagedLinkedListValueEnumerator<TValue, TNode>
     where TValue : unmanaged
     where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
 {
@@ -79,11 +103,18 @@ unsafe public struct UnmanagedLinkedListValueEnumerator<TValue, TNode> : IEnumer
     object IEnumerator.Current => throw new NotImplementedException();
 
     TNode* headNodePtr;
+    public TNode* HeadNodePtr {
+        get => headNodePtr;
+        set => headNodePtr = value;
+    }
 
     TNode* currentNodePtr;
+    public TNode* CurrentNodePtr => currentNodePtr;
+
     public TValue Current => currentNodePtr->Value;
 
     bool isEnd;
+    public bool IsEnd => isEnd;
 
     #endregion
 
@@ -92,9 +123,7 @@ unsafe public struct UnmanagedLinkedListValueEnumerator<TValue, TNode> : IEnumer
 
     public UnmanagedLinkedListValueEnumerator(TNode* listHeadNodePtr)
     {
-        this.headNodePtr = listHeadNodePtr;
-        this.currentNodePtr = null;
-        this.isEnd = (listHeadNodePtr == null);
+        ((IUnmanagedLinkedListValueEnumerator<TValue, TNode>)this).Init(listHeadNodePtr);
     }
     public UnmanagedLinkedListValueEnumerator(UnmanagedLinkedListValueEnumerator<TValue, TNode> enumerator)
     {

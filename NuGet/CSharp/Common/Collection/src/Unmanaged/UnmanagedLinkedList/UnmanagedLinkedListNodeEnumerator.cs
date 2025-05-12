@@ -3,55 +3,105 @@ using System.Collections;
 
 namespace HS.CSharp.Common.Collection;
 
-unsafe public interface IDefaultUnmanagedLinkedListNodeEnumerator<TValue, TNode> 
-    : IEnumerator<TNode>, IPointerEnumerator<TNode>
+unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue> 
+  : IUnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>>
     where TValue : unmanaged
-    where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
 {
     #region Static
 
-    public static UnmanagedLinkedListNodeEnumerator<TValue, TNode> Create(TNode* listHeadNodePtr)
-        => new UnmanagedLinkedListNodeEnumerator<TValue, TNode>(listHeadNodePtr);
+    public static implicit operator UnmanagedLinkedListNodeEnumerator<TValue>(UnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>> enumerator)
+        => new UnmanagedLinkedListNodeEnumerator<TValue>(enumerator);
+
+    public static implicit operator UnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>>(UnmanagedLinkedListNodeEnumerator<TValue> enumerator)
+        => new UnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>>(enumerator);
 
     #endregion
 
+
     #region Instance
 
-    TNode* HeadNodePtr { get; set; }
+    #region Field & Property
 
-    TNode* CurrentNodePtr { get; set; }
-    bool IsEnd { get; set; }
+    object IEnumerator.Current => throw new NotImplementedException();
 
+    UnmanagedLinkedListNode<TValue>* headNodePtr;
+    public UnmanagedLinkedListNode<TValue>* HeadNodePtr {
+        get => headNodePtr;
+        set => headNodePtr = value;
+    }
+
+    UnmanagedLinkedListNode<TValue>* currentNodePtr;
+    public UnmanagedLinkedListNode<TValue>* CurrentNodePtr => currentNodePtr;
+
+    bool isEnd;
+    public bool IsEnd => isEnd;
+
+    #endregion
+
+
+    #region Constructor
+
+    public UnmanagedLinkedListNodeEnumerator(UnmanagedLinkedListNode<TValue>* listHeadNodePtr)
+    {
+        this.headNodePtr = listHeadNodePtr;
+        this.currentNodePtr = null;
+        this.isEnd = (listHeadNodePtr == null);
+    }
+    public UnmanagedLinkedListNodeEnumerator(UnmanagedLinkedListNodeEnumerator<TValue> enumerator)
+    {
+        this.headNodePtr = enumerator.headNodePtr;
+        this.currentNodePtr = enumerator.currentNodePtr;
+        this.isEnd = enumerator.isEnd;
+    }
+    public UnmanagedLinkedListNodeEnumerator(UnmanagedLinkedListNodeEnumerator<TValue, UnmanagedLinkedListNode<TValue>> enumerator)
+    {
+        this.headNodePtr = enumerator.headNodePtr;
+        this.currentNodePtr = enumerator.currentNodePtr;
+        this.isEnd = enumerator.isEnd;
+    }
+    
+
+    #endregion
+
+
+    #region Method
 
     void IDisposable.Dispose() => throw new NotImplementedException();
 
     public bool MoveNext()
     {
-        if (IsEnd)
+        if (isEnd)
             return false;
 
-        if (CurrentNodePtr == null)
+        if (currentNodePtr == null)
         {
-            CurrentNodePtr = HeadNodePtr;
+            currentNodePtr = headNodePtr;
         }
         else
         {
-            CurrentNodePtr = CurrentNodePtr->NextNodePtr;
+            currentNodePtr = currentNodePtr->NextNodePtr;
         }
 
-        return CurrentNodePtr != null;
+        return currentNodePtr != null;
     }
     
     public void Reset()
     {
-        CurrentNodePtr = null;
-        IsEnd = false;
+        currentNodePtr = null;
+        isEnd = false;
     }
+
+    public UnmanagedLinkedListNodeEnumerator<TValue> Copy()
+        => new UnmanagedLinkedListNodeEnumerator<TValue>(this);
+
+    #endregion
 
     #endregion
 }
 
-unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue, TNode> : IEnumerator<TNode>, IPointerEnumerator<TNode>
+
+unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue, TNode> 
+  : IUnmanagedLinkedListNodeEnumerator<TValue, TNode>
     where TValue : unmanaged
     where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
 {
@@ -59,14 +109,17 @@ unsafe public struct UnmanagedLinkedListNodeEnumerator<TValue, TNode> : IEnumera
 
     object IEnumerator.Current => throw new NotImplementedException();
 
-    TNode* headNodePtr;
+    internal TNode* headNodePtr;
+    public TNode* HeadNodePtr {
+        get => headNodePtr;
+        set => headNodePtr = value;
+    }
 
-    TNode* currentNodePtr;
-    public TNode Current => *currentNodePtr;
-    public TNode* CurrentPtr => currentNodePtr;
-    public ref TNode CurrentRef => ref (*currentNodePtr);
+    internal TNode* currentNodePtr;
+    public TNode* CurrentNodePtr => currentNodePtr;
 
-    bool isEnd;
+    internal bool isEnd;
+    public bool IsEnd => isEnd;
 
     #endregion
 
