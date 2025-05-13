@@ -1,14 +1,11 @@
-using System.Collections;
+namespace HS.CSharp.Common.Collection.Unmanaged;
 
-namespace HS.CSharp.Common.Collection;
-
-public interface IExplicitPtrEnumerable<TValue, TEnumerator> : IEnumerable<nint>
-    where TEnumerator : IEnumerator<nint>
+public interface IExplicitPtrEnumerable<T, TEnumerator> : IPtrEnumerable<T>
+    where T : unmanaged
+    where TEnumerator : IPtrEnumerator<T>
 {
-    new TEnumerator GetEnumerator();
+    new TEnumerator GetPtrEnumerator();
+    IPtrEnumerator<T> IPtrEnumerable<T>.GetPtrEnumerator()
+        => GetPtrEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator()
-        => GetEnumerator();
-    IEnumerator<nint> IEnumerable<nint>.GetEnumerator()
-        => GetEnumerator();
 }

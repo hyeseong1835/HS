@@ -10,27 +10,27 @@ namespace HS.CSharp.Common.Collection.Unmanaged;
 /// <typeparam name="TValue"></typeparam>
 [StructLayout(LayoutKind.Sequential)]
 unsafe public struct UnmanagedPtrLinkedList<TValue>
-    : IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>,
-      IExplicitPtrEnumerable<TValue, UnmanagedPtrLinkedListValueEnumerator<TValue>>,
-      IPtrEnumerable<UnmanagedPtrLinkedListNode<TValue>>
+    : IUnmanagedValueLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>,
+      IExplicitPtrEnumerable<TValue, UnmanagedPtrLinkedListValueEnumerator<TValue>>
     where TValue : unmanaged
 {
     #region Field & Property
 
-    internal UnmanagedLinkedList<nint, UnmanagedPtrLinkedListValueEnumerator<TValue>, UnmanagedPtrLinkedListNode<TValue>, UnmanagedPtrLinkedListNodeEnumerator<TValue>> rawList;
-
-    unsafe UnmanagedPtrLinkedListNode<TValue>* IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>.HeadNodePtr => rawList.HeadNodePtr;
-
-    unsafe UnmanagedPtrLinkedListNode<TValue>* IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>.TailNodePtr => rawList.TailNodePtr;
+    internal UnmanagedValueLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>, UnmanagedLinkedListNodeEnumerator<UnmanagedPtrLinkedListNode<TValue>>> rawList;
+    
+    unsafe UnmanagedPtrLinkedListNode<TValue>* IUnmanagedLinkedList<UnmanagedPtrLinkedListNode<TValue>>.HeadNodePtr => rawList.HeadNodePtr;
+    unsafe UnmanagedPtrLinkedListNode<TValue>* IUnmanagedLinkedList<UnmanagedPtrLinkedListNode<TValue>>.TailNodePtr => rawList.TailNodePtr;
 
     public TValue* HeadValue => (TValue*)rawList.HeadValue;
-    nint IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>.HeadValue => rawList.HeadValue;
+    nint IUnmanagedValueLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>.HeadValue => rawList.HeadValue;
 
     public TValue* TailValue => (TValue*)rawList.TailValue;
-    nint IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>.TailValue => rawList.TailValue;
+    nint IUnmanagedValueLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>.TailValue => rawList.TailValue;
 
-    public int Count => rawList.Count;
-
+    public int Count {
+        get => rawList.Count;
+        set => rawList.Count = value;
+    }
     public bool IsEmpty => rawList.IsEmpty;
 
     #endregion
@@ -39,9 +39,12 @@ unsafe public struct UnmanagedPtrLinkedList<TValue>
     #region Constructor
 
     public UnmanagedPtrLinkedList()
+        : this(new UnmanagedValueLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>, UnmanagedLinkedListNodeEnumerator<UnmanagedPtrLinkedListNode<TValue>>>()) { }
+    public UnmanagedPtrLinkedList(UnmanagedValueLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>, UnmanagedLinkedListNodeEnumerator<UnmanagedPtrLinkedListNode<TValue>>> rawList)
     {
-        this.rawList = new UnmanagedLinkedList<nint, UnmanagedPtrLinkedListValueEnumerator<TValue>, UnmanagedPtrLinkedListNode<TValue>, UnmanagedPtrLinkedListNodeEnumerator<TValue>>();
+        this.rawList = rawList;
     }
+    
 
     #endregion
 
@@ -63,7 +66,7 @@ unsafe public struct UnmanagedPtrLinkedList<TValue>
         => rawList.RemoveFirst();
 
     public void Link<TList>(TList list)
-        where TList : IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<TValue>>
+        where TList : IUnmanagedLinkedList<UnmanagedPtrLinkedListNode<TValue>>
         => this.rawList.Link(list);
     
     public void Dispose()
@@ -71,13 +74,11 @@ unsafe public struct UnmanagedPtrLinkedList<TValue>
 
     public UnmanagedPtrLinkedListValueEnumerator<TValue> GetValueEnumerator()
         => new UnmanagedPtrLinkedListValueEnumerator<TValue>(this);
-    UnmanagedPtrLinkedListValueEnumerator<TValue> IExplicitPtrEnumerable<TValue, UnmanagedPtrLinkedListValueEnumerator<TValue>>.GetEnumerator()
-        => new UnmanagedPtrLinkedListValueEnumerator<TValue>(this);
-    
-    public UnmanagedPtrLinkedListNodeEnumerator<TValue> GetNodeEnumerator()
-        => new UnmanagedPtrLinkedListNodeEnumerator<TValue>(this);
-    IPtrEnumerator<UnmanagedPtrLinkedListNode<TValue>> IPtrEnumerable<UnmanagedPtrLinkedListNode<TValue>>.GetPointerEnumerator()
-        => new UnmanagedPtrLinkedListNodeEnumerator<TValue>(this);
+    UnmanagedPtrLinkedListValueEnumerator<TValue> IExplicitPtrEnumerable<TValue, UnmanagedPtrLinkedListValueEnumerator<TValue>>.GetPtrEnumerator()
+        => GetValueEnumerator();
+
+    public UnmanagedLinkedListNodeEnumerator<UnmanagedPtrLinkedListNode<TValue>> GetNodeEnumerator()
+        => rawList.GetNodeEnumerator();
 
     #endregion
 }
@@ -90,30 +91,32 @@ unsafe public struct UnmanagedPtrLinkedList<TValue>
 /// </summary>
 /// <typeparam name="TValue"></typeparam>
 [StructLayout(LayoutKind.Sequential)]
-unsafe public struct UnmanagedPtrLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator>
-    : IUnmanagedLinkedList<nint, TNode>,
-      IExplicitPtrEnumerable<TValue, TValueEnumerator>,
-      IPtrEnumerable<TNode>
+unsafe public struct UnmanagedPtrLinkedList<TValue, TNode, TNodeEnumerator>
+    : IUnmanagedValueLinkedList<nint, TNode>, 
+      IExplicitPtrEnumerable<TValue, UnmanagedPtrLinkedListValueEnumerator<TValue, TNode, TNodeEnumerator>>
     where TValue : unmanaged
-    where TValueEnumerator : IUnmanagedLinkedListValueEnumerator<nint, TNode>, new()
-    where TNode : unmanaged, IUnmanagedLinkedListNode<nint, TNode>
-    where TNodeEnumerator : IUnmanagedLinkedListNodeEnumerator<nint, TNode>, new()
+    where TNode : unmanaged, IUnmanagedPtrLinkedListNode<TValue, TNode>
+    where TNodeEnumerator : IUnmanagedLinkedListNodeEnumerator<TNode>, new()
 {
     #region Field & Property
 
-    internal UnmanagedLinkedList<nint, TValueEnumerator, TNode, TNodeEnumerator> rawList;
-
-    unsafe TNode* IUnmanagedLinkedList<nint, TNode>.HeadNodePtr => rawList.HeadNodePtr;
-
-    unsafe TNode* IUnmanagedLinkedList<nint, TNode>.TailNodePtr => rawList.TailNodePtr;
+    internal UnmanagedValueLinkedList<nint, TNode, TNodeEnumerator> rawList;
+    
+    unsafe TNode* IUnmanagedLinkedList<TNode>.HeadNodePtr => rawList.HeadNodePtr;
+    unsafe TNode* IUnmanagedLinkedList<TNode>.TailNodePtr => rawList.TailNodePtr;
 
     public TValue* HeadValue => (TValue*)rawList.HeadValue;
-    nint IUnmanagedLinkedList<nint, TNode>.HeadValue => rawList.HeadValue;
+    nint IUnmanagedValueLinkedList<nint, TNode>.HeadValue => rawList.HeadValue;
 
     public TValue* TailValue => (TValue*)rawList.TailValue;
-    nint IUnmanagedLinkedList<nint, TNode>.TailValue => rawList.TailValue;
+    nint IUnmanagedValueLinkedList<nint, TNode>.TailValue => rawList.TailValue;
 
     public int Count => rawList.Count;
+    int IUnmanagedLinkedList<TNode>.Count {
+        get => rawList.Count;
+        set => rawList.Count = value;
+    }
+    public bool IsEmpty => rawList.IsEmpty;
 
     #endregion
 
@@ -121,8 +124,10 @@ unsafe public struct UnmanagedPtrLinkedList<TValue, TValueEnumerator, TNode, TNo
     #region Constructor
 
     public UnmanagedPtrLinkedList()
+        : this(new UnmanagedValueLinkedList<nint, TNode, TNodeEnumerator>()) { }
+    public UnmanagedPtrLinkedList(UnmanagedValueLinkedList<nint, TNode, TNodeEnumerator> rawList)
     {
-        this.rawList = new UnmanagedLinkedList<nint, TValueEnumerator, TNode, TNodeEnumerator>();
+        this.rawList = rawList;
     }
 
     #endregion
@@ -145,20 +150,18 @@ unsafe public struct UnmanagedPtrLinkedList<TValue, TValueEnumerator, TNode, TNo
         => rawList.RemoveFirst();
 
     public void Link<TList>(TList list)
-        where TList : IUnmanagedLinkedList<nint, TNode>
+        where TList : IUnmanagedLinkedList<TNode>
         => this.rawList.Link(list);
     
     public void Dispose()
         => rawList.Dispose();
 
-    public TValueEnumerator GetValueEnumerator()
-        => rawList.GetValueEnumerator();
-    TValueEnumerator IExplicitPtrEnumerable<TValue, TValueEnumerator>.GetEnumerator()
-        => rawList.GetValueEnumerator();
+    public UnmanagedPtrLinkedListValueEnumerator<TValue, TNode, TNodeEnumerator> GetValueEnumerator()
+        => new UnmanagedPtrLinkedListValueEnumerator<TValue, TNode, TNodeEnumerator>(this);
+    UnmanagedPtrLinkedListValueEnumerator<TValue, TNode, TNodeEnumerator> IExplicitPtrEnumerable<TValue, UnmanagedPtrLinkedListValueEnumerator<TValue, TNode, TNodeEnumerator>>.GetPtrEnumerator()
+        => GetValueEnumerator();
     
     public TNodeEnumerator GetNodeEnumerator()
-        => rawList.GetNodeEnumerator();
-    IPtrEnumerator<TNode> IPtrEnumerable<TNode>.GetPointerEnumerator()
         => rawList.GetNodeEnumerator();
 
     #endregion

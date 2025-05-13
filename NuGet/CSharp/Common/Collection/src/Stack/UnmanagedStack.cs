@@ -11,7 +11,7 @@ unsafe public struct UnmanagedStack<T> : IDisposable
 {
     #region Static
 
-    public static implicit operator UnmanagedStack<T>(UnmanagedLinkedList<T> list)
+    public static implicit operator UnmanagedStack<T>(UnmanagedValueLinkedList<T> list)
         => new UnmanagedStack<T>(list);
 
     #endregion
@@ -19,15 +19,15 @@ unsafe public struct UnmanagedStack<T> : IDisposable
 
     #region Instance
 
-    UnmanagedLinkedList<T> list;
+    UnmanagedValueLinkedList<T> list;
     public int Count => list.Count;
     public bool IsEmpty => list.IsEmpty;
 
     public UnmanagedStack()
     {
-        list = new UnmanagedLinkedList<T>();
+        list = new UnmanagedValueLinkedList<T>();
     }
-    public UnmanagedStack(UnmanagedLinkedList<T> list)
+    public UnmanagedStack(UnmanagedValueLinkedList<T> list)
     {
         this.list = list;
     }
@@ -56,7 +56,7 @@ unsafe public struct UnmanagedStack<T> : IDisposable
         => list.HeadValue;
 
     public void Link<TList>(TList list)
-        where TList : IUnmanagedLinkedList<T, UnmanagedLinkedListNode<T>>
+        where TList : IUnmanagedLinkedList<T, UnmanagedValueLinkedListNode<T>>
     {
         this.list.Link(list);
     }

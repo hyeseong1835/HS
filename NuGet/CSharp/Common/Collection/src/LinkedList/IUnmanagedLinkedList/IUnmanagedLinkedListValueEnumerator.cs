@@ -5,7 +5,7 @@ namespace HS.CSharp.Common.Collection.Unmanaged;
 unsafe public interface IUnmanagedLinkedListValueEnumerator<TValue, TNode>
     : IEnumerator<TValue>
     where TValue : unmanaged
-    where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
+    where TNode : unmanaged, IUnmanagedValueLinkedListNode<TValue, TNode>
 {
     #region Field & Property
 

@@ -56,7 +56,7 @@ unsafe public struct UnmanagedPtrStack<T> : IDisposable
         => list.HeadValue;
 
     public void Link<TList>(TList list)
-        where TList : IUnmanagedLinkedList<nint, UnmanagedPtrLinkedListNode<T>>
+        where TList : IUnmanagedLinkedList<UnmanagedPtrLinkedListNode<T>>
     {
         this.list.Link(list);
     }
@@ -70,7 +70,7 @@ unsafe public struct UnmanagedPtrStack<T> : IDisposable
             list.AddLast(ptrEnumerator.CurrentPtr);
         }
     }
-    public void LinkEnumerator<TEnumerator>(TEnumerator ptrEnumerator)
+    public void LinkNIntEnumerator<TEnumerator>(TEnumerator ptrEnumerator)
         where TEnumerator : IEnumerator<nint>
     {
         UnmanagedPtrLinkedList<T> list = new UnmanagedPtrLinkedList<T>();

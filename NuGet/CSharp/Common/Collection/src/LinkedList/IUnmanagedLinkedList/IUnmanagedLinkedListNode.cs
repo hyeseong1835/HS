@@ -1,23 +1,19 @@
 namespace HS.CSharp.Common.Collection.Unmanaged;
 
-unsafe public interface IUnmanagedLinkedListNode<TValue, TNode> 
-    : IReadOnlyUnmanagedLinkedListNode<TValue, TNode>
-    where TValue : unmanaged
-    where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
+unsafe public interface IUnmanagedLinkedListNode<TNode> 
+    where TNode : unmanaged, IUnmanagedLinkedListNode<TNode>
 {
     #region Static
 
-    public static TNode CreateNode(TValue value)
+    public static TNode CreateNode()
     {
         TNode newNode = new ();
-        newNode.Value = value;
 
         return newNode;
     }
-    public static TNode CreateNode(TValue value, TNode* nextNodePtr)
+    public static TNode CreateNode(TNode* nextNodePtr)
     {
         TNode newNode = new ();
-        newNode.Value = value;
         newNode.NextNodePtr = nextNodePtr;
 
         return newNode;
@@ -27,11 +23,6 @@ unsafe public interface IUnmanagedLinkedListNode<TValue, TNode>
 
 
     #region Instance
-
-    nint ValuePtrOffset { get; }
-
-    new TValue Value { get; set;}
-    TValue IReadOnlyUnmanagedLinkedListNode<TValue, TNode>.Value => Value;
 
     /// <summary>
     /// 다음 노드의 포인터입니다.

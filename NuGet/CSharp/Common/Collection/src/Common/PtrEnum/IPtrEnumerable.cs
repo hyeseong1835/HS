@@ -3,5 +3,5 @@ namespace HS.CSharp.Common.Collection.Unmanaged;
 unsafe public interface IPtrEnumerable<T>
     where T : unmanaged
 {
-    IPtrEnumerator<T> GetPointerEnumerator();
+    IPtrEnumerator<T> GetPtrEnumerator();
 }

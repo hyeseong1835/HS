@@ -3,7 +3,8 @@ using System.Runtime.InteropServices;
 namespace HS.CSharp.Common.Collection.Unmanaged;
 
 [StructLayout(LayoutKind.Sequential)]
-unsafe public struct UnmanagedPtrLinkedListNode<TValue> : IUnmanagedLinkedListNode<nint, UnmanagedPtrLinkedListNode<TValue>>
+unsafe public struct UnmanagedPtrLinkedListNode<TValue> 
+    : IUnmanagedPtrLinkedListNode<TValue, UnmanagedPtrLinkedListNode<TValue>>
     where TValue : unmanaged
 {
     #region Static
@@ -14,7 +15,7 @@ unsafe public struct UnmanagedPtrLinkedListNode<TValue> : IUnmanagedLinkedListNo
 
     public static UnmanagedPtrLinkedListNode<TValue>* CreateNode()
     {
-        UnmanagedPtrLinkedListNode<TValue>* newNodePtr = (UnmanagedPtrLinkedListNode<TValue>*)Marshal.AllocHGlobal(sizeof(UnmanagedLinkedListNode<TValue>));
+        UnmanagedPtrLinkedListNode<TValue>* newNodePtr = (UnmanagedPtrLinkedListNode<TValue>*)Marshal.AllocHGlobal(sizeof(UnmanagedValueLinkedListNode<TValue>));
 
         return newNodePtr;
     }
@@ -31,13 +32,13 @@ unsafe public struct UnmanagedPtrLinkedListNode<TValue> : IUnmanagedLinkedListNo
 
 
     #region Instance
-    
-    nint IUnmanagedLinkedListNode<nint, UnmanagedPtrLinkedListNode<TValue>>.ValuePtrOffset => valuePtrOffset;
 
-    public TValue* value;
-    nint IUnmanagedLinkedListNode<nint, UnmanagedPtrLinkedListNode<TValue>>.Value {
-        get => (nint)value;
-        set => this.value = (TValue*)value;
+    public nint ValuePtrOffset => valuePtrOffset;
+
+    TValue* value;
+    public TValue* Value {
+        get => value;
+        set => this.value = value;
     }
 
     public UnmanagedPtrLinkedListNode<TValue>* nextNodePtr;

@@ -5,15 +5,15 @@ namespace HS.CSharp.Common.Collection.Unmanaged;
 /// <br/>
 /// 더 이상 사용하지 않을 때 Dispose()를 호출해야합니다.
 /// </summary>
-/// <typeparam name="TValue"></typeparam>
 /// <typeparam name="TNode"></typeparam>
-unsafe public interface IUnmanagedLinkedList<TValue, TNode> : IReadOnlyUnmanagedLinkedList<TValue, TNode>, IPtrEnumerable<TNode>
-    where TValue : unmanaged
-    where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
+unsafe public interface IUnmanagedLinkedList<TNode>
+    where TNode : unmanaged, IUnmanagedLinkedListNode<TNode>
 {
     TNode* HeadNodePtr { get; }
-    public TValue HeadValue => (HeadNodePtr->Value);
 
     TNode* TailNodePtr { get; }
-    public TValue TailValue => (TailNodePtr->Value);
+
+    int Count { get; protected set; }
+    
+    bool IsEmpty { get; }
 }

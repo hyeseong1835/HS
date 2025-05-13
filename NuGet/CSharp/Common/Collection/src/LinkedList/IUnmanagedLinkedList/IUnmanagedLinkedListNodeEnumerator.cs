@@ -2,11 +2,10 @@ using System.Collections;
 
 namespace HS.CSharp.Common.Collection.Unmanaged;
 
-unsafe public interface IUnmanagedLinkedListNodeEnumerator<TValue, TNode>
+unsafe public interface IUnmanagedLinkedListNodeEnumerator<TNode>
     : IEnumerator<TNode>, 
       IPtrEnumerator<TNode>
-    where TValue : unmanaged
-    where TNode : unmanaged, IUnmanagedLinkedListNode<TValue, TNode>
+    where TNode : unmanaged, IUnmanagedLinkedListNode<TNode>
 {
     #region Field & Property
 

@@ -3,14 +3,14 @@ namespace HS.CSharp.Common.Collection.Unmanaged;
 unsafe public readonly struct ReadonlyUnmanagedLinkedList<TValue> 
     : IExplicitEnumerableReadOnlyUnmanagedLinkedList<
         TValue, 
-        UnmanagedLinkedListValueEnumerator<TValue>, 
-        UnmanagedLinkedListNode<TValue>
+        UnmanagedValueLinkedListValueEnumerator<TValue>, 
+        UnmanagedValueLinkedListNode<TValue>
     >
     where TValue : unmanaged
 {
     #region Static
 
-    public static implicit operator ReadonlyUnmanagedLinkedList<TValue>(UnmanagedLinkedList<TValue> list)
+    public static implicit operator ReadonlyUnmanagedLinkedList<TValue>(UnmanagedValueLinkedList<TValue> list)
         => new ReadonlyUnmanagedLinkedList<TValue>(list);
 
     #endregion
@@ -20,7 +20,7 @@ unsafe public readonly struct ReadonlyUnmanagedLinkedList<TValue>
 
     #region Field & Property
     
-    readonly UnmanagedLinkedList<TValue> list;
+    readonly UnmanagedValueLinkedList<TValue> list;
 
     public int Count => list.Count;
 
@@ -29,16 +29,16 @@ unsafe public readonly struct ReadonlyUnmanagedLinkedList<TValue>
 
     #region Constructor
 
-    public ReadonlyUnmanagedLinkedList(UnmanagedLinkedList<TValue> list)
+    public ReadonlyUnmanagedLinkedList(UnmanagedValueLinkedList<TValue> list)
     {
         this.list = list;
     }
 
     #endregion
     
-    UnmanagedLinkedListValueEnumerator<TValue> IExplicitEnumerable<TValue, UnmanagedLinkedListValueEnumerator<TValue>>.GetEnumerator()
+    UnmanagedValueLinkedListValueEnumerator<TValue> IExplicitEnumerable<TValue, UnmanagedValueLinkedListValueEnumerator<TValue>>.GetEnumerator()
         => list.GetValueEnumerator();
-    public UnmanagedLinkedListValueEnumerator<TValue> GetValueEnumerator()
+    public UnmanagedValueLinkedListValueEnumerator<TValue> GetValueEnumerator()
         => list.GetValueEnumerator();
 
     #endregion
@@ -57,7 +57,7 @@ unsafe public readonly struct ReadonlyUnmanagedLinkedList<TValue, TValueEnumerat
 {
     #region Static
 
-    public static implicit operator ReadonlyUnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator>(UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator> list)
+    public static implicit operator ReadonlyUnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator>(UnmanagedValueLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator> list)
         => new ReadonlyUnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator>(list);
 
     #endregion
@@ -67,7 +67,7 @@ unsafe public readonly struct ReadonlyUnmanagedLinkedList<TValue, TValueEnumerat
 
     #region Field & Property
     
-    readonly UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator> list;
+    readonly UnmanagedValueLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator> list;
 
     public int Count => list.Count;
 
@@ -76,16 +76,16 @@ unsafe public readonly struct ReadonlyUnmanagedLinkedList<TValue, TValueEnumerat
 
     #region Constructor
 
-    public ReadonlyUnmanagedLinkedList(UnmanagedLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator> list)
+    public ReadonlyUnmanagedLinkedList(UnmanagedValueLinkedList<TValue, TValueEnumerator, TNode, TNodeEnumerator> list)
     {
         this.list = list;
     }
 
     #endregion
     
-    UnmanagedLinkedListValueEnumerator<TValue> IExplicitEnumerable<TValue, UnmanagedLinkedListValueEnumerator<TValue>>.GetEnumerator()
+    UnmanagedValueLinkedListValueEnumerator<TValue> IExplicitEnumerable<TValue, UnmanagedValueLinkedListValueEnumerator<TValue>>.GetEnumerator()
         => list.GetValueEnumerator();
-    public UnmanagedLinkedListValueEnumerator<TValue> GetValueEnumerator()
+    public UnmanagedValueLinkedListValueEnumerator<TValue> GetValueEnumerator()
         => list.GetValueEnumerator();
 
     #endregion
