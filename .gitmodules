@@ -1,0 +1,21 @@
+[submodule "HS.Common.System"]
+	path = HS.Common.System
+	url = https://github.com/hyeseong1835/HS.Common.System
+[submodule "HS.Common.Collection"]
+	path = HS.Common.Collection
+	url = https://github.com/hyeseong1835/HS.Common.Collection
+[submodule "HS.Common.Memory"]
+	path = HS.Common.Memory
+	url = https://github.com/hyeseong1835/HS.Common.Memory
+[submodule "HS.Common.Reflection"]
+	path = HS.Common.Reflection
+	url = https://github.com/hyeseong1835/HS.Common.Reflection
+[submodule "HS.Common.Text"]
+	path = HS.Common.Text
+	url = https://github.com/hyeseong1835/HS.Common.Text
+[submodule "HS.Common.Network"]
+	path = HS.Common.Network
+	url = https://github.com/hyeseong1835/HS.Common.Network
+[submodule "HS.Common.Utility"]
+	path = HS.Common.Utility
+	url = https://github.com/hyeseong1835/HS.Common.Utility
