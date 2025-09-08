@@ -22,5 +22,5 @@
     네트워킹과 관련된 기능을 제공합니다.
 
 - ### [HS.Common.Utility](https://github.com/hyeseong1835/HS.Common.Utility)
-    여러 라이브러리가 모두 사용된 특수 기능을 구현합니다.
+    여러 라이브러리가 사용된 특수 기능을 구현합니다.
   
