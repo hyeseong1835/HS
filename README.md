@@ -2,7 +2,7 @@
 개인용 라이브러리 집합
 ## Common
 - ### [HS.Common.System](https://github.com/hyeseong1835/HS.Common.System)
-    **다른 라이브러리로 마이그레이션 예정**
+    **다른 라이브러리로 이동 예정**
   
     기본적인 스트림 기반 입출력과 리눅스 시스템의 Key-Value 형태의 문서 분석, ~~메모리 관련 기능~~ 등을 제공합니다
 
